@@ -10,11 +10,32 @@ samplepath = os.path.join(dr,fn)
 path = samplepath
 
 
+class LineTest(object):
+
+    def __init__(self,lineobj:obj,tests:list[obj]):
+        self.lineobj = lineobj
+        self.tests = tests
+    
+    def test(self) -> list[bool]:
+        return [test(lineobj) for test in self.tests]
+
+
+class MakeParagraphs(object):
+
+    @staticmethod
+    def get_dists(lines:list(obj),
+                  features = 'top bottom'.split(),
+                  ) -> list[float]: return [line2[features[0]] - line1[features[1]] for line1,line2 in zip(lines[:-1],lines[1:])]
+
+    @staticmethod
+    def test_para_end(line: obj):
+
+    def __init__(pbrobj: obj,test:bool =True):
+        
+
+
 def proc_prosp(path):
     pbdf = pbr.open(path)
-
-    get_dists = lambda lines: [line2['top'] - line1['bottom'] for line1,line2 in zip(lines[:-1],lines[1:])]
-
     pagear = []
     pages = pbdf.pages
     for page in tqdm(pages):
@@ -25,9 +46,10 @@ def proc_prosp(path):
         clusters = ms.predict(dists.reshape(-1, 1))
         nobreak = clusters[np.argmin(dists)]
         siox = sio()
-        for line,label in zip(lines,clusters):
+        for line,label in zip(lines[:-1],clusters): # distances to next line stop at lines[-2]
             siox.write(line['text'])
             siox.write('\n') if label != nobreak else siox.write(' ')
+        siox.write(lines[-1]['text'])
         pagear.append(siox.getvalue())
         siox.close()
     return pagear
